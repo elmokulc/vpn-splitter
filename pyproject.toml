@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "vpn-splitter"
-version = "0.1.4"
+version = "0.1.5"
 description = "Launch selected Linux applications through an OpenConnect VPN"
 requires-python = ">=3.11"
 license = {file = "LICENSE"}

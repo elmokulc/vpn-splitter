@@ -9,8 +9,8 @@ check: test
 	python3 -m compileall -q src
 
 lint:
-	$(RUFF) check src tests tools packaging/build_deb.py packaging/build_macos.py bin/vpn-splitter
-	$(RUFF) format --check src tests tools packaging/build_deb.py packaging/build_macos.py bin/vpn-splitter
+	$(RUFF) check src tests tools packaging/*.py bin/vpn-splitter
+	$(RUFF) format --check src tests tools packaging/*.py bin/vpn-splitter
 
 run:
 	python3 bin/vpn-splitter gui

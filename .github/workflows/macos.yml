@@ -20,4 +20,4 @@ jobs:
       - name: Build and verify arm64 app bundle
         run: python3 packaging/build_macos.py
       - name: Verify Apple Silicon architecture
-        run: lipo -verify_arch arm64 'dist/VPN Splitter Preview.app/Contents/MacOS/VPNSplitterPreview'
+        run: lipo 'dist/VPN Splitter Preview.app/Contents/MacOS/VPNSplitterPreview' -verify_arch arm64

@@ -1,0 +1,133 @@
+name: Release packages
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-packages-${{ github.event.release.tag_name || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  version:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Validate package versions and release tag
+        id: version
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          release_version=$(python3 packaging/release_version.py --tag "$RELEASE_TAG")
+          echo "version=$release_version" >> "$GITHUB_OUTPUT"
+
+  debian:
+    needs: version
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Test and build Debian package
+        run: make deb
+      - name: Inspect Debian package
+        run: dpkg-deb --info dist/*.deb
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-debian
+          path: dist/*.deb
+          if-no-files-found: error
+          retention-days: 14
+
+  macos:
+    needs: version
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Test and build macOS preview
+        run: make macos-app
+      - name: Verify Apple Silicon architecture
+        run: lipo 'dist/VPN Splitter Preview.app/Contents/MacOS/VPNSplitterPreview' -verify_arch arm64
+      - name: Archive app bundle with permissions and metadata
+        env:
+          RELEASE_VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent \
+            'dist/VPN Splitter Preview.app' \
+            "dist/vpn-splitter_${RELEASE_VERSION}_macos_arm64_preview.app.zip"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-macos-arm64
+          path: dist/*.app.zip
+          if-no-files-found: error
+          retention-days: 14
+
+  assets:
+    needs: [version, debian, macos]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: release-*
+          merge-multiple: true
+          path: dist
+      - name: Create checksums
+        working-directory: dist
+        run: sha256sum *.deb *.app.zip > SHA256SUMS
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-assets
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    if: github.event_name == 'release'
+    needs: assets
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-assets
+          path: dist
+      - name: Verify downloaded packages
+        working-directory: dist
+        run: sha256sum --check SHA256SUMS
+      - name: Attach packages and checksums to the published release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          gh release upload "$RELEASE_TAG" \
+            dist/*.deb dist/*.app.zip dist/SHA256SUMS \
+            --repo "$GH_REPO" --clobber

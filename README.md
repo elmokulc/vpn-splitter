@@ -4,6 +4,12 @@ Launch selected native applications through an **OpenConnect / Cisco AnyConnect 
 
 The working VPN implementation uses **Python 3.11+, GTK 3/VTE and a privileged Linux namespace service**. A **native macOS Apple Silicon configuration preview** is under development; it does not yet connect or protect applications. See the [macOS development guide](docs/v1-macos.md), [current architecture](architecture.md), [Linux guide](docs/v1-linux.md), [validation record](docs/validation-linux.md) and [known issues](docs/issues.md). The [original cross-platform study](docs/research-and-design.md) describes prospective Tauri/Rust work.
 
+## Release downloads
+
+Publishing a GitHub release runs the **Release packages** workflow. After both platform builds pass, the release receives the Debian `.deb`, the Apple Silicon preview `.app.zip`, and `SHA256SUMS`. The ZIP contains `VPN Splitter Preview.app` with executable permissions and macOS metadata preserved. The macOS artifact remains a configuration preview, ad-hoc signed and not notarized; it does not provide VPN protection.
+
+The workflow can also be run manually from **Actions → Release packages → Run workflow** to download build artifacts without publishing a release. See the [release guide](docs/releases.md) for version/tag requirements, checksums and build limits.
+
 ## macOS Apple Silicon development preview
 
 The SwiftUI preview edits local VPN profiles, validates the signatures of selected `.app` bundles and shows prerequisites. The Network Extension, OpenConnect relay and network protection are **not implemented**; saving an application selection does not change its network access.
@@ -22,7 +28,7 @@ The bundle targets arm64 and macOS 13+. Its ad-hoc signature is for local develo
 ```sh
 make check
 python3 packaging/build_deb.py
-sudo apt install ./dist/vpn-splitter_0.1.4_all.deb
+sudo apt install ./dist/vpn-splitter_0.1.5_all.deb
 sudo usermod -aG vpn-splitter "$USER"
 ```
 

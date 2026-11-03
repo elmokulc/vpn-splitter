@@ -75,6 +75,8 @@ Authored November 3, 2026 on Linux. The Python suite and compilation can be run 
 
 `native/macos/Tests/VPNSplitterCoreTests/` covers URL/field validation, application metadata validation, configuration round trips and permissions, duplicate rejection, preservation on invalid saves, corrupt/future/secret-bearing documents and refusal to claim protection. `.github/workflows/macos.yml` runs native tests and builds/verifies the arm64 bundle on a macOS 15 runner. GitHub documents [runner labels and architectures](https://docs.github.com/en/actions/how-tos/write-workflows/choose-where-workflows-run/choose-the-runner-for-a-job). The workflow has not been triggered by this change locally.
 
+The separate **Release packages** workflow also builds this preview on macOS and packages it into a downloadable `.app.zip`, alongside the Linux `.deb`. It can run manually before publication or attach assets automatically when a release is published. See the [release guide](releases.md). Native compilation/tests succeeded in the initial [macOS CI run](https://github.com/elmokulc/vpn-splitter/actions/runs/41724389792); that run failed only at the incorrectly ordered `lipo` invocation, corrected in the release workflow change. GUI and network validation remain pending.
+
 Before calling the preview build validated on a Mac:
 
 1. Run native tests, build the bundle, verify arm64 and launch without sudo.
