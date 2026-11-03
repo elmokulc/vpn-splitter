@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=VPN Splitter
+Comment=Launch selected applications through an AnyConnect VPN
+Exec=vpn-splitter gui
+Icon=vpn-splitter
+Terminal=false
+Categories=Network;Security;
+StartupNotify=true

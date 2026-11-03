@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=65"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vpn-splitter"
+version = "0.1.4"
+description = "Launch selected Linux applications through an OpenConnect VPN"
+requires-python = ">=3.11"
+license = {file = "LICENSE"}
+
+[project.scripts]
+vpn-splitter = "vpn_splitter.cli:main"
+
+[project.optional-dependencies]
+dev = ["ruff==0.17.3"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/entry.py" = ["E402"]
+"bin/vpn-splitter" = ["E402"]
+"src/vpn_splitter/gui.py" = ["E402"]
+"packaging/build_deb.py" = ["E402"]
+"tests/integration/*.py" = ["E402"]

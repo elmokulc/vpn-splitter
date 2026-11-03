@@ -1,0 +1,17 @@
+#!/usr/bin/python3
+"""Source-tree and Debian entry point; never requires pip."""
+
+import sys
+from pathlib import Path
+
+source = Path(__file__).resolve().parent.parent / "src"
+sys.path.insert(
+    0,
+    str(
+        source if (source / "vpn_splitter/__init__.py").is_file() else Path("/usr/lib/vpn-splitter")
+    ),
+)
+
+from vpn_splitter.cli import main
+
+raise SystemExit(main())
