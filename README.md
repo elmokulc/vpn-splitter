@@ -1,8 +1,21 @@
-# VPN Splitter — Linux V1
+# VPN Splitter
 
 Launch selected native applications through an **OpenConnect / Cisco AnyConnect VPN** while other applications keep their direct connection.
 
-The current implementation uses **Python 3.11+, GTK 3/VTE and a privileged Linux namespace service**. Linux is the only implemented platform. See the [current architecture](architecture.md), [Linux guide](docs/v1-linux.md), [validation record](docs/validation-linux.md) and [known issues](docs/issues.md). The [original cross-platform study](docs/research-and-design.md) describes prospective Tauri/Rust work.
+The working VPN implementation uses **Python 3.11+, GTK 3/VTE and a privileged Linux namespace service**. A **native macOS Apple Silicon configuration preview** is under development; it does not yet connect or protect applications. See the [macOS development guide](docs/v1-macos.md), [current architecture](architecture.md), [Linux guide](docs/v1-linux.md), [validation record](docs/validation-linux.md) and [known issues](docs/issues.md). The [original cross-platform study](docs/research-and-design.md) describes prospective Tauri/Rust work.
+
+## macOS Apple Silicon development preview
+
+The SwiftUI preview edits local VPN profiles, validates the signatures of selected `.app` bundles and shows prerequisites. The Network Extension, OpenConnect relay and network protection are **not implemented**; saving an application selection does not change its network access.
+
+On a Mac with Xcode 15+ (or corresponding Command Line Tools), Swift 5.9+ and Python 3.11+:
+
+```sh
+make macos-app
+open 'dist/VPN Splitter Preview.app'
+```
+
+The bundle targets arm64 and macOS 13+. Its ad-hoc signature is for local development, not distribution. Compilation, GUI and network behavior require validation on a Mac; this preview was authored on Linux. See the [build instructions, implementation stages and acceptance checks](docs/v1-macos.md).
 
 ## Build and install on Debian / Ubuntu
 

@@ -70,5 +70,5 @@ An About button now displays the version loaded by the GUI using the package ver
 - IPv6 inside the protected namespace is deliberately blocked, not tunneled.
 - Browser SSO, client certificates, posture checks, Snap/Flatpak and unvalidated shared desktop services are outside V1.
 - One VPN network per user; application data is per application, not per VPN connection profile.
-- Windows/macOS backends are not implemented. See the [prospective study](research-and-design.md).
+- Windows/macOS network backends are not implemented. A native macOS configuration preview exists, with build and validation limits in the [macOS guide](v1-macos.md). It does not provide network protection.
 - Desktop tray behavior and prolonged-load measurements remain to be validated. Package Maintainer contact is a placeholder.

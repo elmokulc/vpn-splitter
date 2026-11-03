@@ -16,11 +16,12 @@ from pathlib import Path
 
 from . import __version__
 from .ipc import SOCKET_PATH, Client
-from .linux import ALLOWED_ENVIRONMENT, ENTRY
 from .model import Application, Profile, ProfileStore, SplitterError
 
 
 def openconnect_command(profile: Profile, socket_path: str) -> list[str]:
+    from .linux import ENTRY
+
     profile.validate()
     hook = shlex.join(["/usr/bin/python3", "-I", str(ENTRY), "_hook", socket_path])
     argv = [
@@ -93,6 +94,8 @@ def connect(profile: Profile, client: Client) -> int:
 
 
 def doctor(client: Client) -> tuple[dict, bool]:
+    from .linux import ENTRY
+
     checks = {
         "python": f"{sys.version_info.major}.{sys.version_info.minor}",
         "openconnect": bool(shutil.which("openconnect")),
@@ -112,11 +115,11 @@ def doctor(client: Client) -> tuple[dict, bool]:
 
 
 def parser():
-    result = argparse.ArgumentParser(description="Selective Linux VPN — selected applications only")
+    result = argparse.ArgumentParser(description="Selective VPN — selected applications only")
     result.add_argument("--version", action="version", version=__version__)
     result.add_argument("--socket", default=SOCKET_PATH, help="System service socket")
     commands = result.add_subparsers(dest="command", metavar="COMMAND")
-    commands.add_parser("gui", help="Open the GTK interface")
+    commands.add_parser("gui", help="Open the platform interface")
     commands.add_parser("doctor", help="Check prerequisites and service access")
     commands.add_parser("status", help="Show the current user session status")
     commands.add_parser("disconnect", help="Disconnect the tunnel and keep applications isolated")
@@ -162,6 +165,13 @@ def parser():
 
 def main(argv=None) -> int:
     args = parser().parse_args(argv)
+    if sys.platform == "darwin":
+        from .macos import main as macos_main
+
+        return macos_main(args.command)
+    if sys.platform != "linux":
+        print("vpn-splitter: This platform is not supported", file=sys.stderr)
+        return 1
     client = Client(args.socket)
     store = ProfileStore()
     try:
@@ -226,6 +236,8 @@ def main(argv=None) -> int:
                 store.save(profile)
                 print("Application saved")
             else:
+                from .linux import ALLOWED_ENVIRONMENT
+
                 environment = {k: v for k, v in os.environ.items() if k in ALLOWED_ENVIRONMENT}
                 print(
                     json.dumps(

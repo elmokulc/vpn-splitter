@@ -10,8 +10,10 @@ The current layout is:
 - `bin/vpn-splitter`: source-tree and installed launcher.
 - `tests/`: standard-library unit tests; `tests/integration/` contains kernel, GTK, and ocserv laboratory checks.
 - `packaging/`: Debian builder, systemd unit, desktop entry, and SVG icon.
+- `native/macos/`: Swift package for the Apple Silicon SwiftUI configuration preview and native unit tests; no macOS network adapter yet.
+- `packaging/build_macos.py`: local arm64 preview bundle builder; not a distributable signed installer.
 
-`build/` and `dist/` are generated and ignored. Rust workspaces and other OS adapters have not been introduced.
+`build/`, `dist/`, `.build/` and `.swiftpm/` are generated and ignored. Rust workspaces have not been introduced. Read `docs/v1-macos.md` before macOS work; the preview does not implement VPN protection.
 
 ## Build, Test, and Development Commands
 
@@ -21,6 +23,8 @@ Use the system Python; GTK bindings come from distribution packages.
 - `make run`: open the GTK interface from source.
 - `make deb`: check sources and build the Debian package in `dist/`.
 - `python3 bin/vpn-splitter doctor`: report local prerequisites and service access.
+- `make macos-test`: run native Swift tests on macOS with Swift 5.9+.
+- `make macos-app`: test and build the arm64 macOS preview on a Mac.
 
 The privileged service requires a root-owned installed package; never run it from a user-writable checkout. Integration commands and their isolation requirements are documented in `docs/v1-linux.md`.
 
