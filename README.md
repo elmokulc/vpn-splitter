@@ -12,16 +12,18 @@ The workflow can also be run manually from **Actions → Release packages → Ru
 
 ## macOS Apple Silicon development preview
 
-The SwiftUI preview edits local VPN profiles, validates the signatures of selected `.app` bundles and shows prerequisites. The Network Extension, OpenConnect relay and network protection are **not implemented**; saving an application selection does not change its network access.
+The SwiftUI preview edits local VPN profiles, validates and rechecks the signatures of selected `.app` bundles and shows prerequisites. A separate, compile-only Network Extension laboratory is available for development. The OpenConnect relay and network protection are **not implemented**; saving an application selection does not change its network access. See the [macOS laboratory](docs/macos-laboratory.md) for its scope and signing requirements.
 
-On a Mac with Xcode 15+ (or corresponding Command Line Tools), Swift 5.9+ and Python 3.11+:
+On a Mac with full Xcode 15+, Swift 5.9+ and Python 3.11+ (standalone Command Line Tools do not include XCTest, required by the native tests):
 
 ```sh
 make macos-app
 open 'dist/VPN Splitter Preview.app'
 ```
 
-The bundle targets arm64 and macOS 13+. Its ad-hoc signature is for local development, not distribution. Compilation, GUI and network behavior require validation on a Mac; this preview was authored on Linux. See the [build instructions, implementation stages and acceptance checks](docs/v1-macos.md).
+If the active developer directory is `/Library/Developer/CommandLineTools`, use `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer make macos-app`. See the [toolchain setup](docs/v1-macos.md#build-and-run-on-a-mac) for details.
+
+The bundle targets arm64 and macOS 13+. Its ad-hoc signature is for local development, not distribution. Native tests and bundle compilation have passed on an Apple Silicon Mac; GUI and network validation remain pending. See the [build instructions, implementation stages and acceptance checks](docs/v1-macos.md).
 
 ## Build and install on Debian / Ubuntu
 

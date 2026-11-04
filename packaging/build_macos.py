@@ -30,6 +30,8 @@ def build(output: Path) -> Path:
         "release",
         "--arch",
         "arm64",
+        "--product",
+        "VPNSplitterPreview",
     ]
     subprocess.run(command, check=True)
     binary_directory = Path(

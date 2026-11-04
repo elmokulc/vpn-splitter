@@ -2,9 +2,9 @@ name: macOS preview
 
 on:
   push:
-    paths: ['native/macos/**', 'packaging/build_macos.py', '.github/workflows/macos.yml']
+    paths: ['native/macos/**', 'packaging/build_macos.py', 'Makefile', '.github/workflows/macos.yml']
   pull_request:
-    paths: ['native/macos/**', 'packaging/build_macos.py', '.github/workflows/macos.yml']
+    paths: ['native/macos/**', 'packaging/build_macos.py', 'Makefile', '.github/workflows/macos.yml']
   workflow_dispatch:
 
 permissions:
@@ -15,8 +15,8 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
-      - name: Test native configuration and readiness
-        run: swift test --package-path native/macos
+      - name: Test native configuration, signatures and laboratory flow policy
+        run: make macos-lab
       - name: Build and verify arm64 app bundle
         run: python3 packaging/build_macos.py
       - name: Verify Apple Silicon architecture

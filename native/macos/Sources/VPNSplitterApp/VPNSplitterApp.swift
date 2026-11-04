@@ -2,6 +2,7 @@ import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
 import VPNSplitterCore
+import VPNSplitterMacRuntime
 
 @MainActor
 final class WorkspaceModel: ObservableObject {
@@ -69,6 +70,8 @@ private struct WorkspaceView: View {
     @State private var selection: UUID?
     @State private var draft = MacProfile()
     @State private var showDiagnostics = false
+    @State private var checkingApplications = false
+    @State private var verificationResults: [String: String] = [:]
     private let backend = DevelopmentBackend()
 
     var body: some View {
@@ -121,12 +124,22 @@ private struct WorkspaceView: View {
                                 Text(app.name)
                                 Text(app.path).font(.caption).foregroundStyle(.secondary)
                                 Text(app.signingIdentifier).font(.caption).textSelection(.enabled)
+                                if let result = verificationResults[app.path] {
+                                    Text(result).font(.caption).textSelection(.enabled)
+                                }
                             }
                             Spacer()
                             Button("Remove") { draft.applications.removeAll { $0.id == app.id } }
                         }
                     }
-                    Button("Add application…", action: chooseApplication)
+                    HStack {
+                        Button("Add application…", action: chooseApplication)
+                        Button(checkingApplications ? "Verifying…" : "Verify saved identities",
+                               action: verifyApplications)
+                            .disabled(checkingApplications || draft.applications.isEmpty)
+                    }
+                    Text("Verification checks current files against saved signatures. It does not provide network protection.")
+                        .font(.caption).foregroundStyle(.secondary)
                     Text("A saved selection does not protect the app or its helpers. Runtime signature checks and separate browser instances still require implementation.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
@@ -174,6 +187,7 @@ private struct WorkspaceView: View {
                 draft = profile
             }
         }
+        .onChange(of: draft.applications) { _ in verificationResults = [:] }
         .alert("VPN Splitter", isPresented: Binding(
             get: { model.error != nil }, set: { if !$0 { model.error = nil } }
         )) {
@@ -214,5 +228,27 @@ private struct WorkspaceView: View {
         panel.canChooseDirectories = false
         guard panel.runModal() == .OK, let url = panel.url else { return }
         draft.cafile = url.path
+    }
+
+    private func verifyApplications() {
+        let applications = draft.applications
+        checkingApplications = true
+        verificationResults = [:]
+        Task {
+            let results = await Task.detached(priority: .userInitiated) {
+                var results: [String: String] = [:]
+                for application in applications {
+                    do {
+                        try ApplicationInspector.revalidate(application)
+                        results[application.path] = "Saved signing identity verified."
+                    } catch {
+                        results[application.path] = "Verification failed: \(error.localizedDescription)"
+                    }
+                }
+                return results
+            }.value
+            checkingApplications = false
+            if applications == draft.applications { verificationResults = results }
+        }
     }
 }

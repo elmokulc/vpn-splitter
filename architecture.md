@@ -1,6 +1,6 @@
 # Architecture
 
-This document primarily describes the **implemented Linux V1**, using Python 3.11+, GTK 3/VTE, OpenConnect and a root systemd service. A native SwiftUI macOS configuration preview now exists; its network adapter, Windows, Rust and Tauri remain prospective. See the [macOS guide](docs/v1-macos.md) and [original study](docs/research-and-design.md).
+This document primarily describes the **implemented Linux V1**, using Python 3.11+, GTK 3/VTE, OpenConnect and a root systemd service. A native SwiftUI macOS configuration preview and a compile-only transparent-proxy laboratory now exist; macOS VPN transport/protection, Windows, Rust and Tauri remain prospective. See the [macOS guide](docs/v1-macos.md) and [original study](docs/research-and-design.md).
 
 ## Contract and boundaries
 
@@ -23,9 +23,14 @@ A separate network namespace does not separate application singletons or all sha
 | `tools/recover_desktop.py` | Explicit, targeted recovery through the normal user service manager |
 | `macos.py` | macOS CLI diagnostics and refusal of unavailable networking commands |
 | `native/macos/Sources/VPNSplitterCore/` | Native macOS profile validation/storage and explicit unavailable backend |
-| `native/macos/Sources/VPNSplitterApp/` | SwiftUI configuration preview and static signature inspection |
+| `native/macos/Sources/VPNSplitterApp/` | SwiftUI configuration preview and manual application identity revalidation |
+| `native/macos/Sources/VPNSplitterMacRuntime/` | Static signatures, audit-token code identity and bounded laboratory policy/lifecycle |
+| `native/macos/Sources/AuditTokenSupport/` | Small C adapter for Darwin audit-token size, UID extraction and self-test tokens |
+| `native/macos/Sources/VPNSplitterNetworkExtension/` | Experimental loopback-only transparent-proxy provider; not installed or active |
+| `native/macos/Sources/VPNSplitterMacLab/` | Read-only signature inspector and laboratory configuration generator |
+| `native/macos/Sources/VPNSplitterNetworkLab/` | System-extension entry point, refusing manual execution as a raw executable |
 
-The Python CLI dispatches to macOS before creating a Linux IPC client or loading the Linux adapter. Native macOS settings use a separate, versioned format under Application Support; they are not silently imported from Linux profiles. There is no macOS privileged service, Network Extension, VPN connection or protected application launcher in this milestone. The Linux packet path and lifecycle below do not apply to the macOS preview.
+The Python CLI dispatches to macOS before creating a Linux IPC client or loading the Linux adapter. Native macOS settings use a separate, versioned format under Application Support; they are not silently imported from Linux profiles. There is no installed macOS privileged service or Network Extension, VPN connection or protected application launcher in this milestone. The laboratory source closes selected/unknown flows and only permits an explicitly pinned control application to go direct within its numeric loopback scope. This is unit-tested policy and compiled provider code, not verified kernel enforcement. The Linux packet path and lifecycle below do not apply to the macOS preview.
 
 ## Control and packet paths
 
